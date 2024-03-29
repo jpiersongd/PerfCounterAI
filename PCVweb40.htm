@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<!-- Perf Counter AI v0.40 -->
+<!-- Product Manager, Developer: Jim Pierson -->
+<!-- MIT License. See https://opensource.org/licenses/MIT -->
+
+
+
+<html>
+<head>
+    <title>PerfCounterAI</title>
+    <link rel="stylesheet" type="text/css" href="pca_styles.0.40.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+
+    <script src="pca_display.0.40.js"></script>
+    <script src="pca_core_functions.0.40.js"></script>
+    <script src="pca_help_text.0.40.js"></script>
+    <script src="pca_commsWithBackend.0.40.js"></script>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/3.2.1/js/dataTables.fixedHeader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+  
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" href="https://soundmotion.app/wp/wp-content/uploads/2023/12/flatline.jpg" type="image/x-icon">
+
+</head>
+
+
+<body>
+    <div id="progressPopup"></div>
+    <table id="myTable">
+        <tr id="titleContainer">
+            <td id="titleContainer" colspan="5">
+                <div>
+                    <h1><a href="https://sound-motion.com" id="soundMotionLink">Sound Motion:</a> <b>PerfCounterAI</b>
+                        <span style="font-size: 12px; text-decoration: underline;" id="version_help_text"> (v0.40)</span></h1> 
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td id="FileStatsContainer" colspan="1">
+                <!-- Admin interface in top left quarter of page -->
+                <!-- Dropdown menu to select files -->
+                <div id="fileEntry">
+                    <b>Upload Perf Counter CSV file:</b>
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mO4e+/Rf/vgjv8qVuUkYZCe16/f/WcAMewyjpGFQXoZQKaRawBIL+0MQAckGYALkGwALj5JYUCWC4jRTJIBAxONVHEBfbwQkDiJssx0/8Hj/yBDyMnO9+4/+Q8AFxZ6Py7WkNsAAAAASUVORK5CYII="
+                    width="16" height="16" id="FileEntry_question_mark">
+                    <br><br>
+                    <button id="demoButton1">Demo 1</button>
+                    <button id="demoButton2">Demo 2</button>
+                    <button id="demoButton3">Demo 3</button>
+                    <br><br>
+                    <label for="file1"></label>
+                    <input type="file" id="file1" accept=".csv">
+                </div>
+        
+                <!-- Display file stats results -->
+                <div id="results">
+                    <b>File Statistics:</b>
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mO4e+/Rf/vgjv8qVuUkYZCe16/f/WcAMewyjpGFQXoZQKaRawBIL+0MQAckGYALkGwALj5JYUCWC4jRTJIBAxONVHEBfbwQkDiJssx0/8Hj/yBDyMnO9+4/+Q8AFxZ6Py7WkNsAAAAASUVORK5CYII="
+                    width="16" height="16" class="questionmarkText" id="FileStats_question_mark">
+                    <br>
+                    <span id="file1Size"></span><br>
+                    <span id="file1CounterCount"></span><br>
+                    <span id="file1NotCounted"></span><br> 
+                    <span id="file1Counted"></span><br> 
+                    <span id="file1IntervalCount"></span><br>
+                    <span id="file1ElapsedTime"></span><br> 
+                    <span id="file1IntervalDur"></span><br> 
+                    <span id="Changepoint1"></span><br>  
+                    <span id="Changepoint1b"></span><br>  
+                    <span id="Changepoint2"></span><br>  
+                </div>
+
+                <div class="controls">
+                    <b>Chart controls:</b>
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mO4e+/Rf/vgjv8qVuUkYZCe16/f/WcAMewyjpGFQXoZQKaRawBIL+0MQAckGYALkGwALj5JYUCWC4jRTJIBAxONVHEBfbwQkDiJssx0/8Hj/yBDyMnO9+4/+Q8AFxZ6Py7WkNsAAAAASUVORK5CYII="
+                    width="16" height="16" id="control_question_mark">
+                    <br><br>
+                    <form id="controlsForm">                       
+                        <input type="range" id="slider1" min="0" max="30" step="1" value="10">
+                        <label for="HighlightCount" id="currentHighlightCount">highlighted: 10 </label>
+                    </form>
+                </div>
+
+                <div class="controls" id="customDisplayFilter">
+                    <b>Custom Display Filter:
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mO4e+/Rf/vgjv8qVuUkYZCe16/f/WcAMewyjpGFQXoZQKaRawBIL+0MQAckGYALkGwALj5JYUCWC4jRTJIBAxONVHEBfbwQkDiJssx0/8Hj/yBDyMnO9+4/+Q8AFxZ6Py7WkNsAAAAASUVORK5CYII="
+                    width="16" height="16" id="customDisplayFilter_question_mark"> 
+                    </b>
+              
+                    <div>
+                        <select id="filter-field">
+                          <option></option>
+                          <option value="Countername">Countername</option>
+                          <option value="baseAvgValue">baseAvg</option>
+                          <option value="ImmedMedianValue">ImmedMed</option>
+                          <option value="loadmaxValue">loadmax</option>
+                          <option value="postminValue">postmin</option>
+                          <option value="changepointIndex1">upInt</option>
+                          <option value="changepointIndex2">dwnInt</option>
+                          <option value="growthIndex">growth</option>
+                          <option value="KPI1similarity">KPIsim</option>
+                        </select>
+                      
+                        <select id="filter-type">
+                          <option value="=">=</option>
+                          <option value="<"><</option>
+                          <option value="<="><=</option>
+                          <option value=">">></option>
+                          <option value=">=">>=</option>
+                          <option value="!=">!=</option>
+                          <option value="like">like</option>
+                          <option value="Or">Or</option>
+                        </select>
+                        <input id="filter-value" type="text" placeholder="value to filter">
+                        <button id="filter-set">Set</button>
+                        <button id="filter-clear">Clear</button>
+                    </div>
+                      
+                </div>
+
+                <div class="controls" id="filters_text">
+                        <b>Filters in use:</b>
+                    
+                    
+                        
+                </div>
+
+            </td>
+            <td id="displayFilters" colspan="1">
+                <div id="displayFilterBorder" >
+                    <b>Auto Filters:</b>
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mO4e+/Rf/vgjv8qVuUkYZCe16/f/WcAMewyjpGFQXoZQKaRawBIL+0MQAckGYALkGwALj5JYUCWC4jRTJIBAxONVHEBfbwQkDiJssx0/8Hj/yBDyMnO9+4/+Q8AFxZ6Py7WkNsAAAAASUVORK5CYII="
+                    width="16" height="16" id="display_filter_question_mark">
+                    
+                    <p>
+                    <button class = Action_button  id="dF1">Growth  
+                        <img src="https://soundmotion.app/wp/wp-content/uploads/2023/12/growth.jpg"  width="25" height="25">
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF2">Decline
+                        <img src="https://soundmotion.app/wp/wp-content/uploads/2023/12/decline.jpg"  width="25" height="25">
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF3">tbd..
+                        <img src="https://soundmotion.app/wp/wp-content/uploads/2023/12/flatline.jpg"  width="25" height="25">
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF4">tbd..
+                        <img src="https://soundmotion.app/wp/wp-content/uploads/2023/12/Flipflop.jpg"  width="25" height="25">
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF5">tbd..
+                        <img src="https://soundmotion.app/wp/wp-content/uploads/2023/12/oscilate.jpg"  width="25" height="25">
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF6">tbd.. 
+                        <img src="https://soundmotion.app/wp/wp-content/uploads/2023/12/simlar.jpg"  width="25" height="25">
+                    </button>
+                </div>      
+            </td>
+
+            <td id="chartContainer" colspan="1">
+                <!-- Chart Container -->
+                <div id="chartContainerdiv" style="position: relative;">
+                    <a href="#" id="helpButtonChart">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mO4e+/Rf/vgjv8qVuUkYZCe16/f/WcAMewyjpGFQXoZQKaRawBIL+0MQAckGYALkGwALj5JYUCWC4jRTJIBAxONVHEBfbwQkDiJssx0/8Hj/yBDyMnO9+4/+Q8AFxZ6Py7WkNsAAAAASUVORK5CYII="
+                        width="16" height="16" id="chart_question_mark">
+                    </a>
+                    <canvas id="chartCanvas"></canvas>                 
+                    <div id="verticalLine" style="position: absolute; border-left: 30px solid rgb(0, 255, 115); height: 10%; top: 100%; left: -6%; bottom: 0%;"></div>  
+                    <div id="verticalLine2" style="position: absolute; border-left: 30px solid rgb(255, 166, 0); height: 10%; top: 100%; left: -6%; bottom: 0%;"></div> 
+                    <!--div id="verticalLine3" style="position: absolute; border-left: 10px solid rgb(255, 0, 0); height: 10%; top: 100%; left: -6%; bottom: 0%;"></div-->  
+                    <div id="verticalLine_modeCPI1" style="position: absolute; border-left: 3px solid rgb(0, 4, 255); height: 67%; top: 22%; left: -10%; bottom: 0%;"></div>  
+                    <div id="verticalLine_modeCPI1b" style="position: absolute; border-left: 3px solid rgb(0,4,255); height: 67%; top: 22%; left: -6%; bottom: 0%;"></div>  
+                </div>
+                <a href="#" id="exportButton_link">
+                    <img src="https://cdn4.iconfinder.com/data/icons/arrow-68/48/20-512.png" alt="Embedded Image"
+                    width="16" height="16" id="exportButton" >
+                </a>
+            </td>
+            <td id="analysisButtons" colspan="1">
+                <div id="displayFilterBorder" >
+                    <b>Analysis Actions:</b>
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mO4e+/Rf/vgjv8qVuUkYZCe16/f/WcAMewyjpGFQXoZQKaRawBIL+0MQAckGYALkGwALj5JYUCWC4jRTJIBAxONVHEBfbwQkDiJssx0/8Hj/yBDyMnO9+4/+Q8AFxZ6Py7WkNsAAAAASUVORK5CYII="
+                    width="16" height="16" id="analysisButtons_question_mark">
+                    
+                    <p>
+                    <button class = Action_button id="dF11">Analyze  
+                    <!--     <img src="tbd"  width="25" height="25"> -->
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF12">Ask GPT
+                        <!-- <img src="tbd"  width="25" height="25"> -->
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF13">tbd..
+                        <!-- <img src="tbd"  width="25" height="25"> -->
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF14">tbd..
+                        <!-- <img src="tbd"  width="25" height="25"> -->
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF15">tbd..
+                        <!-- <img src="tbd"  width="25" height="25"> -->
+                    </button>
+                    <p>
+                    <button class = Action_button id="dF16">tbd..
+                        <!-- <img src="tbd"  width="25" height="25"> -->
+                    </button>
+                </div>      
+            </td>
+                <td id="analyzerMessages" colspan="1">
+                <!-- Chart Container -->
+                <div id="analyzerMessagesdiv">
+                    <div id="GettingStarted_Text"></div>
+                    <div id="Example_counter_Text"></div>
+                    <div class=Counter_text id="upCounter_text"></div>
+                    <div class=Counter_text id="dwnCounter_text"></div>
+                    <div class=Counter_text id="KPICounter_text"></div>
+                    <p></p>
+                    <div id="GPTmsg_text"></div>
+                </div>
+            </td>
+        </tr>
+        
+        <tr>
+            <td id="csvBorder" colspan="5">  
+
+                <div class="table-container">
+                    <table id="csvTable" class="display" > </table>
+
+                </div> 
+                <div>
+                    <a href="#" id="tableExportButton_link">
+                        <img src="https://cdn4.iconfinder.com/data/icons/arrow-68/48/20-512.png" alt="Embedded Image"
+                        width="16" height="16" id="tableExportButton" >
+                    </a>
+                    <a href="#" id="tableHelpButton_link">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mO4e+/Rf/vgjv8qVuUkYZCe16/f/WcAMewyjpGFQXoZQKaRawBIL+0MQAckGYALkGwALj5JYUCWC4jRTJIBAxONVHEBfbwQkDiJssx0/8Hj/yBDyMnO9+4/+Q8AFxZ6Py7WkNsAAAAASUVORK5CYII="
+                        width="16" height="16" id="dataTable_question_mark">  
+                    </a>
+                </div>
+                
+                <div id="customContextMenu" class="context-menu">
+                    <ul>
+                      <li id="contextMenuItem1">Select this counter as a Key Perf Indicator (KPI)</li>
+                      <li id="contextMenuItem2">option 2</li>
+                      <li id="contextMenuItem3">Cancel</li>
+                    </ul>
+                  </div>
+                               
+            </td>  
+        </tr>   
+    </table>
+
+    <script>
+        // Global variables:
+        let showRows = 4; // default setting for number of rows to highlight in dataTable
+        let parsedData = []; // Initialize a horizontal array to hold the parsed perf counter csv file data, including the headers
+        // Col 0 of the parseData has the timestamps. Row 0 has the counter names, all numbers have quotes
+        let lastclickedRowNumber = 0;
+        let lastScrolledtoRowNumber = showRows-1;
+        let lastScrolledDwntoROW = []; // part of debounce
+        let lastScrolledUPtoROW = [];  //part of debounce
+        let table; // create an array for table
+        let chart; // create an array for the chart data
+        let datasets = []; // Array to hold multiple datasets for the chart
+        let altTransposedAggData = []; // Define the  array for the table data transposed vertically
+        let DR = false; // indicates docReady has been fired
+        let TR = false; // indicates table is ready
+        let counterCount; // how many total counters are seen in the file
+        let currentLinePosition = 1; // Initialize the line position
+        let currentLinePosition2 = 1; 
+        let currentLinePosition3 = 1; 
+        let lastimeOrder = 0; //debounce the OrderListener
+        let csvFileUrl = "https://soundmotion.app/wp/wp-content/uploads/2023/12/DataCollector1512.csv"; // default to demo1
+        let modeCPI1 = 0; // set default incase no changepoint is found
+        let modeCPI1b = 0; // This will be the endpoint
+        let modeChangePointIndex2 = 0; // set default incase no changepoint is found
+        let maxLines = [];
+        let defaultMiddle; //middle of the chart - default for no change
+        let searchText = []; // array to track and display current search filters added
+        let righClickedRowData = []; // enable menu listener to capture this
+        let KPI1Countername = []; //for doing similarity and STAMP against a single KPI counter
+        let normalizedKPI1Values = [];
+        let Growingcounter_list_array = [];
+        let Decliningcounter_list_array = [];
+        let lastFilterClicked = '';
+        let KPIcounter_list_array = [];
+        let fullSt = []; // full starttime for entire page
+       
+
+        // Listeners -----------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------
+
+        
+        //Create the table to show the counter data
+        $(document).ready(function () {
+            //console.log(`Document Ready event`);             
+            DR = true;              
+        });                
+        
+
+
+        // Attach event listener to the custom filter 'set' button
+        $('#filter-set').click( function () {
+            let selectedColumn = $('#filter-field').val();
+            let selectedOperator = $('#filter-type').val();
+            let filterValue = $('#filter-value').val(); 
+            function donothing() {
+                console.log(Date.now(), ` ---------------------applyCustomFilter: filter set`);
+            }
+            applyCustomFilter(selectedColumn,selectedOperator,filterValue, donothing);
+            
+        })
+
+        //Clear most recent filter
+        $('#filter-clear').click(clearCustomFilter);
+
+
+        // Attach event listener to the Growth button
+        $('#dF1').click(function () {
+            //$('#dF1').addClass('highlighted-button'); // Highlight the button
+            console.log(Date.now(), ` #df1 Growth button clicked: clearing custom filter(all)`);
+            clearCustomFilter('all'); 
+            lastFilterClicked = 'Growth';  // flag to the highlighter to know which counter_array to add the details to
+            let selectedColumn = 'changepointIndex1';
+            let selectedOperator = '=';
+            let filterValue = modeCPI1.toString(); // look for the most common changepoint
+            console.log(Date.now(), ` #df1 Growth button clicked: calling to applyCustomFilter:`, selectedColumn, selectedOperator, filterValue)
+            // Define a callback function to execute after applyCustomFilter finishes.. they are slow.
+            function afterFilterApplied() {
+                // Trigger a click event on a column's sorting button (index 10, 0-based) in descending order.
+                console.log(Date.now(), ` #df1 Growth click: After Filter, cleared Growth array, sorting by the Growth Column`);
+                Growingcounter_list_array = []; //clearing the array before the highter adds new data
+                table.order([7, 'desc']).draw(); // the Growth counter_list_array will be updated by highlight on Order click
+                console.log(Date.now(), ` #df1 Growth click: sorting table.order complete, updating upCounter_text`);
+                //update the field with the selection
+                document.querySelector('#upCounter_text').innerHTML = `<b>Largest Growth Counter:</b><br>- ${JSON.stringify(Growingcounter_list_array[0].Countername)}`;
+                lastFilterClicked = []; //don't let any new scrool or clicks update the KPI array
+            }
+            // Apply the custom filter and pass the callback function
+            applyCustomFilter(selectedColumn, selectedOperator, filterValue, afterFilterApplied);
+        });
+
+
+        // Attach event listener to the 'Decline' button
+        $('#dF2').click( function () {
+            clearCustomFilter('all'); 
+            lastFilterClicked = 'Decline'; // flag to the highlighter to know which counter_array to add the details to
+            let selectedColumn = 'changepointIndex2';
+            let selectedOperator = '=';
+            let filterValue = modeCPI1.toString();    
+            function afterFilterApplied() {
+                // Trigger a click event on a column's sorting button (index 10, 0-based) in descending order.
+                console.log(Date.now(), ` -------------------------#df2 Decline click: sorting by the Growth Column`);
+                Decliningcounter_list_array = [];
+                table.order([7, 'asc']).draw(); //Decline counter array
+                //let GPTresult = fetchAnalysisDataP(Growingcounter_list_array[0], Decliningcounter_list_array[0]); //get some GPT text
+                document.querySelector('#dwnCounter_text').innerHTML = `<b>Largest Decline Counter:</b><br>- ${JSON.stringify(Decliningcounter_list_array[0].Countername)}`;
+        
+                lastFilterClicked = [];
+            }
+            // Apply the custom filter and pass the callback function
+            applyCustomFilter(selectedColumn, selectedOperator, filterValue, afterFilterApplied);
+        })
+
+
+        // Attach event listener to the 'Analyze' button
+        $('#dF11').click( function () {
+            $('#dF11').addClass('highlighted-button'); // Highlight the Analyze button
+            console.log(Date.now(), ` Analyze button: Starting Analysis process`);
+            $('#dF1').addClass('highlighted-button'); //Highlight Growth button
+            $('#dF1').trigger('click');
+            setTimeout(function () {
+                $('#dF1').removeClass('highlighted-button'); //unhighlight Growth
+                $('#dF2').addClass('highlighted-button'); // Highlight Decline
+                $('#dF2').trigger('click'); 
+            }, 1000);   
+                     
+            setTimeout(function () {
+                $('#dF2').removeClass('highlighted-button'); //unhighlight Decline
+               // let GPTresult = fetchAnalysisDataP(Growingcounter_list_array[0], Decliningcounter_list_array[0]); //get some GPT text
+               $('#dF12').addClass('highlighted-button'); //highlight the 'Ask' button
+               $('#dF12').trigger('click'); //
+            }, 2000);
+
+            setTimeout(function () {
+                $('#dF11').removeClass('highlighted-button'); //Unhighlight the Analyze button
+                $('#dF12').removeClass('highlighted-button'); //Unhighlight the Ask button
+            }, 3000); 
+            
+        })
+
+        // Attach event listener to the 'Ask' button
+        $('#dF12').click( function () {
+            //$('#dF12').addClass('highlighted-button'); // Highlight the button
+            console.log(Date.now(), ` Ask Button selected: Calling to GPT`);
+
+           if (Growingcounter_list_array[0] && Decliningcounter_list_array[0] && KPIcounter_list_array[0] ) {
+            //let GPTresult = fetchAnalysisDataP(Growingcounter_list_array[0].Countername, Decliningcounter_list_array[0].Countername, KPIcounter_list_array[0].Countername);
+            let GPTresult = fetchAnalysisDataP(Growingcounter_list_array[0], Decliningcounter_list_array[0], KPIcounter_list_array);
+            // using show rows because sort Desc is two sorts
+           } else {
+            document.querySelector('#GPTmsg_text').innerHTML = `GPT: Select one Growth counter, one Decline, and one KPI first.`;
+           }
+
+        })
+
+
+        
+        function setScrollListener(calledby) {
+            let st = Date.now();
+            console.log(Date.now(), ` setScrollListener: calledby=`, calledby);
+            if (DR == true && TR == true && lastFilterClicked == '' || calledby== 'buildTable' ){
+                console.log(Date.now(), ` setScrollListener: setting DR=`, DR, `TR=`, TR, `lastFilterClicked=`, lastFilterClicked, `calledby=`, calledby);
+                //console.log(Date.now(), ` setClickRowListener: setting`);
+                var scrollContainer = $('#csvTable').closest('.dataTables_scrollBody');
+                //console.log(Date.now(), ` setScrollListener: csvTable=`, $('#csvTable'));
+                scrollContainer.on('scroll', function (event) {
+                      if (lastFilterClicked == '' || calledby== 'buildTable' ) {  //scroll ok on single clear, but not on 'all' after growth or decline button click
+                        //console.log(Date.now(), ` scrollListener: getting scroll event, lastFilterClicked=`, lastFilterClicked, `lastScrolledtoRowNumber=`, lastScrolledtoRowNumber, `lastScrolledDwntoROW=`, lastScrolledDwntoROW, `lastScrolledUPtoROW=`, lastScrolledUPtoROW, `calledby=`, calledby );
+                        const scrollTopv = scrollContainer.scrollTop();
+                        const pageHeight = scrollContainer.height();
+                        const row = Math.round(scrollTopv/30) +4;   // 5 rows on the screen
+                        const rowDiff = row - lastScrolledtoRowNumber;
+                        if (rowDiff > 0 && lastScrolledtoRowNumber != lastScrolledDwntoROW ) {  //pos threashold and debouncing
+                            // Scrolling down
+                            console.log(Date.now(), ` scrollListener: scrolling down before-Loop from lastScrolledtoRowNumber=`, lastScrolledtoRowNumber, `scrollTopv=`, scrollTopv, `row=`, row, `rowDiff=`, rowDiff );
+                            for (let i = 0; i < rowDiff; i++) {
+                                highlightRow(lastScrolledtoRowNumber - showRows, "setScrollListener, unhighlight top row");
+                                highlightRow(lastScrolledtoRowNumber , "setScrollListener scrolling down, highlighting bottom row");
+                                console.log(Date.now(), ` scrollListener: scrolled DOWN scrollTopv=`, scrollTopv, `row=`, row, `rowDiff=`, rowDiff, `lastScrolledtoRowNumber=`, lastScrolledtoRowNumber );    
+                                lastScrolledDwntoROW = lastScrolledtoRowNumber;  //updating debouncer
+                                lastScrolledtoRowNumber += 1;
+                            }
+                        } else if (rowDiff < 0 && lastScrolledtoRowNumber != lastScrolledUPtoROW) { //neg threashold and debouncing
+                            console.log(Date.now(), ` scrollListener: scrolling up from lastScrolledtoRowNumber=`, lastScrolledtoRowNumber);
+                            // Scrolling up
+                            for (let i = 0; i < Math.abs(rowDiff); i++) {
+                                highlightRow(lastScrolledtoRowNumber -1, "setScrollListener scrolling up, unhighlight bottom row");
+                                highlightRow(lastScrolledtoRowNumber - showRows-1, "setScrollListener scrolling up, highlighting top row");
+                                console.log(Date.now(), ` scrollListener: scrolled UP scrollTopv=`, scrollTopv, `row=`, row, `rowDiff=`, rowDiff, `lastScrolledtoRowNumber=`, lastScrolledtoRowNumber ); 
+                                lastScrolledUPtoROW = lastScrolledtoRowNumber; //updating debouncer
+                                lastScrolledtoRowNumber -= 1;
+                            }
+                        } 
+                    }
+                                  
+                    //console.log(Date.now(), ` scrollListener: scrolling scrollTopv=`, scrollTopv, `row=`, row, `rowDiff=`, rowDiff );
+                });
+            }
+        }
+
+
+        function setClickedRowListener(calledby) {
+            let st = Date.now();
+            console.log(Date.now(), ` setClickRowListener: lastFilterClicked=`, lastFilterClicked, `calledby=`, calledby);
+            if (DR == true && TR == true && lastFilterClicked != 'clearAll') {
+                $('#csvTable tbody').off('click', 'tr'); //unbind existing table
+                console.log(Date.now(), ` setClickRowListener: setting, lastFilterClicked=`, lastFilterClicked, `calledby=`, calledby);
+
+                $('#csvTable tbody').on('click', 'tr', function (event) {
+                    st = Date.now(); //reset for each click
+                    console.log(Date.now(), ` ClickedRowListener: event.button=`, event, `lastFilterClicked=`, lastFilterClicked);
+                    if (event.button !== 2 && event.button !== 'undefined') {  // left click only
+                        let allRows = table.rows().nodes(); // Get all rows in the table body
+                        let clickedRow = this; // this row
+                        lastclickedRowNumber = Array.from(allRows).indexOf(clickedRow) + 0;  // find and save the rownumber for up/down arrows 
+                        //console.log(Date.now(), ` ClickedRowListener: ----------------------------lastclickedRowNumber = `, lastclickedRowNumber);
+                        let clickedRowData = table.row(this).data(); // Get the clickedRowData header and normalize it
+                        //console.log(Date.now(), ` ClickedRowListener: clickedRowData= `, clickedRowData);
+                        let clickedHeader;
+                        if (lastclickedRowNumber != -1 && clickedRowData != undefined && clickedRowData != -1 ) {   // skip any bad row when loading second file
+                            clickedHeader = clickedRowData.Countername;
+                            //console.log(Date.now(), ` ClickedRowListener: Clicked Header: `, clickedHeader);
+                            const changepointIndex1 = clickedRowData.changepointIndex1; 
+                            const changepointIndex2 = clickedRowData.changepointIndex2; 
+                            const changepointIndex3 = clickedRowData.peakInt; 
+                            //console.log(Date.now(), ` ClickedRowListener: changepointIndex1=`,changepointIndex1, `changepointIndex2=`, changepointIndex2, `changepointIndex3=`, changepointIndex3);
+                            if (!isNaN(changepointIndex1)) {
+                                currentLinePosition = changepointIndex1;
+                                currentLinePosition2 = changepointIndex2;
+                                currentLinePosition3 = changepointIndex3;
+                                //updateVerticalLine();
+                            }      
+                            // Check if the row is already highlighted
+                            if ($(this).hasClass('highlighted')) {
+                                console.log(Date.now(), ` ClickedRowListener: row already highlighted, removing highlight for row=`, lastclickedRowNumber);
+                                $(this).removeClass('highlighted');         
+                                // Find the index of the dataset with the same label as the clicked header
+                                const datasetIndex = chart.data.datasets.findIndex(dataset => dataset.label === clickedHeader);
+                                // Remove the dataset from the chart
+                                if (datasetIndex !== -1 && clickedRowData != undefined) {chart.data.datasets.splice(datasetIndex, 1);}
+                                chart.update();
+                            } else {
+                                // Add 'highlighted' class to the clicked row
+                                $(this).addClass('highlighted');
+                                // Find which column matches in source parsedData
+                                let normalizedValues = findCounterInparsedData(clickedHeader);
+                                //console.log(Date.now(), ` ClickedRowListener: added highlight to clickedHeader: ${clickedHeader} lastclickedRow=`, lastclickedRowNumber, `lastFilterClicked=`, lastFilterClicked, ` duration=`, Date.now()-st);
+                                //console.log(`setClickedRowListener normalizedValues=`, normalizedValues);
+                                updateChart(normalizedValues, clickedHeader) 
+                                // Update the lists of interesting counters
+                                if (lastFilterClicked == 'Growth') {
+                                    console.log(Date.now(), ` ClickedRowListener: adding clickedHeader: ${clickedHeader} to Growingingcounter_list_array`);
+                                    Growingcounter_list_array.push(clickedRowData);
+                                } 
+                                if (lastFilterClicked == 'Decline') {
+                                    console.log(Date.now(), ` ClickedRowListener: adding clickedHeader: ${clickedHeader} to Decliningcounter_list_array`);
+                                    Decliningcounter_list_array.push(clickedRowData);
+                                }//add top counter name to interesting counters array
+                                if (lastFilterClicked == 'KPI' && lastclickedRowNumber == 0) { // only add the first sorted row
+                                    console.log(Date.now(), ` ClickedRowListener: adding clickedHeader: ${clickedHeader} to KPIcounter_list_array`);
+                                    KPIcounter_list_array.push(clickedRowData);
+                                }//add top counter name to interesting counters array
+                            } 
+                        } 
+                    }              
+                }); 
+                return setClickedRowListener;
+            }
+        }
+
+
+        // Listen for sort order changes when clicking on the dataTable header
+        function orderEventListener(calledby) {   
+            if (Date.now() - lastimeOrder > 0 && TR == true && lastFilterClicked != 'clearAll') {
+                console.log(Date.now(), ` OrderEventListener: lastFilterClicked=`, lastFilterClicked, `, highlighting the top `, showRows, ` rows, calledby=`, calledby);
+                // Remove 'highlighted' class from all rows
+                $('#csvTable tbody tr').removeClass('highlighted');
+                // Clear the chart
+                clearChart(`orderEventListener`);
+                lastScrolledtoRowNumber = 4; //resetting to default
+                // Highlight the top rows
+                for (let i = 0; i < showRows; i++) {
+                    highlightRow(i, "orderEventListener:" +i);
+                }
+                lastimeOrder = Date.now();
+            }  else {
+                console.log(Date.now(), ` OrderEventListener: lastFilterClicked=`, lastFilterClicked, `, NOT highlighting the top `, showRows, ` rows, calledby=`, calledby);
+            }
+        }
+
+        // Listen for the sort order change clicks
+        function updateOrderListener(calledby) {
+            if (DR == true) {
+                console.log(Date.now(), ` updateOrderListener: Creating new OrderListener====================== calledby=`, calledby);
+                table.off('csvTable order.dt');
+                table.on('csvTable order.dt', orderEventListener);
+            }
+        }
+
+
+
+        function setRightClickRowListener(calledby) {
+            if (DR == true && TR == true){
+                $('#csvTable tbody').off('contextmenu', 'tr'); //unbind existing table
+                console.log(Date.now(), ` setRightClickRowListener: setting Right clickRow Listener calledby=`, calledby);
+
+                // right click listener for the dataTable
+                $('#csvTable tbody').on('contextmenu', 'tr', function (e) {
+                e.preventDefault(); // Prevent the default right-click menu from showing up
+
+                // Get the data or attributes of the clicked row
+                var rowData = table.row(this).data();
+                righClickedRowData = rowData;  // move to global
+                console.log(Date.now(), ` righclickOnTable: rowData=`, rowData);
+
+                // Calculate the position to display the context menu
+                var menuX = e.pageX;
+                var menuY = e.pageY;
+
+                // Show the custom context menu at the calculated position
+                $('#customContextMenu')
+                    .css({
+                    top: menuY,
+                    left: menuX,
+                    position: 'absolute',
+                    })
+                    .show();
+                });
+
+                // Hide the context menu when clicking anywhere outside of it
+                $(document).on('click', function () {
+                $('#customContextMenu').hide();
+                });
+            }
+        }
+
+        // Listen for customContextMenu item selections after a rightclick
+        var contextMenu = document.getElementById('customContextMenu');
+        var menuItems = contextMenu.getElementsByTagName('li');
+        // Add a click event listener to each menu item
+        for (var i = 0; i < menuItems.length; i++) {
+            menuItems[i].addEventListener('click', function(event) {
+                var clickedMenuItem = event.target.textContent; // Get the text content of the clicked menu item
+
+                if (clickedMenuItem == "Select this counter as a Key Perf Indicator (KPI)") {
+                    contextMenu.style.display = 'none'; // Close the context menu before running
+                    console.log(Date.now(), ` customContextMenu: Clicked menu item: ` + clickedMenuItem);
+                    console.log(Date.now(), ` customContextMenu: Clicked dataTable row Countername= ` + righClickedRowData.Countername);
+                    setKPI(righClickedRowData.Countername);
+                }
+                contextMenu.style.display = 'none'; // Close the context menu
+            });
+        }
+
+
+        // Add an event listener to the document to listen for the "keydown" event
+        document.addEventListener('keydown', function(event) {
+            if (event.keyCode === 38) {
+                // Call the up arrow() function
+                if (lastclickedRowNumber -1 >= 0) {
+                    //highlightRow(lastclickedRowNumber -1, "keydown");
+                    const rowHeight = 15; 
+                    const scrollTop = rowHeight * (lastclickedRowNumber - 1); // Calculate the new scroll position
+                    $('#csvTable').parent().scrollTop(scrollTop); // Scroll the DataTable container up
+                }
+                //unhighlight the bottom most row
+                //let oldlastclickedRowNumber = lastclickedRowNumber; //save last user click
+                //if (lastclickedRowNumber + showRows > 0) {highlightRow(lastclickedRowNumber + showRows, "keydown");} //click to unhighlight
+                //lastclickedRowNumber = oldlastclickedRowNumber; // reset the lastclick to be the user's click
+            }
+            if (event.keyCode === 40) {
+                // Call the downarrow() function
+                if (lastclickedRowNumber +1 < counterCount) {
+                    //highlightRow(lastclickedRowNumber +1, "keydown");
+                    const rowHeight = 15; 
+                    const scrollTop = rowHeight * (lastclickedRowNumber + 1); // Calculate the new scroll position
+                    $('#csvTable').parent().scrollTop(scrollTop); // Scroll the DataTable container down 
+/*                     const dataTable = $('#csvTable').DataTable();
+                    // Scroll to the next row (adjust the number as needed)
+                    const nextRowIndex = lastclickedRowNumber + 1;
+                    const rowCount = dataTable.page.info().length;
+                    if (nextRowIndex < rowCount) {
+                        dataTable.page(nextRowIndex).draw('page');
+                    } */
+                }  
+                //unhighlight the top most row
+                //let oldlastclickedRowNumber = lastclickedRowNumber; //save last user click
+                //if (lastclickedRowNumber - showRows <= counterCount) {highlightRow(lastclickedRowNumber - showRows, "keydown");} //click to unhighlight
+                //lastclickedRowNumber = oldlastclickedRowNumber; // reset the lastclick to be the user's click
+            }
+            //console.log(`down button pressed ${event.keyCode} Last row= ${lastclickedRowNumber} `);
+        });
+
+
+        currentHighlightCount.textContent = `Highlighting: ${showRows.toFixed(0)}`;  // Default text next to the slider
+        // Add an event listener to update the settings and text when the slider changes
+        slider1.addEventListener('input', function () {
+            showRows = parseFloat(slider1.value);
+            currentHighlightCount.textContent = `Highlighting: ${showRows.toFixed(0)}`; // update text
+        });
+
+
+        // Setup listener for Radio #1 Toggle changes
+        const radio1Options = document.querySelectorAll('input[name="radio1"]');
+        let selectedradioOption = "off";  // Default state
+        radio1Options.forEach(option => {
+            option.addEventListener('change', function() {
+                selectedradioOption = document.querySelector('input[name="radio1"]:checked').value;
+                //console.log(selectedSoundOption);
+                if (selectedradioOption == 'on') {console.log(`on`);}
+                else {console.log(`off`);}
+            });
+        });
+
+
+        // Event listener for Demo 1 button
+        $('#demoButton1').addClass('highlighted-button'); // Highlight Demo1 as default   <<--remove this as default for testing
+        document.getElementById('demoButton1').addEventListener('click', function () {
+            csvFileUrl = "https://soundmotion.app/wp/wp-content/uploads/2023/12/DataCollector1512.csv";
+            loadCSVFromCDN();
+            $('#demoButton1').addClass('highlighted-button'); // Highlight the button
+            $('#demoButton2').removeClass('highlighted-button');
+            $('#demoButton3').removeClass('highlighted-button');
+            $('#file1').removeClass('highlighted-button');
+            clearCustomFilter('all');  
+            
+        });
+
+        // Event listener for Demo 2 button
+        document.getElementById('demoButton2').addEventListener('click', function () {
+            csvFileUrl = "https://soundmotion.app/wp/wp-content/uploads/2023/12/DataCollector1512.csv";
+            setClickedRowListener();
+            updateOrderListener();
+            loadCSVFromCDN();
+            $('#demoButton2').addClass('highlighted-button'); // Highlight the button
+            $('#demoButton1').removeClass('highlighted-button');
+            $('#demoButton3').removeClass('highlighted-button');
+            $('#file1').removeClass('highlighted-button');
+            clearCustomFilter('all'); 
+        });
+
+        // Event listener for Demo 3 button
+        document.getElementById('demoButton3').addEventListener('click', function () {
+            csvFileUrl = "https://soundmotion.app/wp/wp-content/uploads/2023/12/PerformanceCounter51635.csv";
+            loadCSVFromCDN();
+            $('#demoButton3').addClass('highlighted-button'); // Highlight the button
+            $('#demoButton2').removeClass('highlighted-button');
+            $('#demoButton1').removeClass('highlighted-button');
+            $('#file1').removeClass('highlighted-button');
+            clearCustomFilter('all'); 
+        });
+
+
+
+        function clearFileStats() {
+            document.getElementById('file1Size').textContent = ``;
+        }
+
+        // Listen for file uploads and then analysis
+        document.getElementById('file1').addEventListener('change',  function () {
+            $('#file1').addClass('highlighted-button'); // Highlight the button
+            $('#demoButton3').removeClass('highlighted-button');
+            $('#demoButton2').removeClass('highlighted-button');
+            $('#demoButton1').removeClass('highlighted-button');
+            clearCustomFilter('all'); //remove this if this is first file to load.
+            const file1 = this.files[0];
+            TR = false;
+            if (file1) {
+                const fs = Math.round(file1.size / 1024);
+                document.getElementById('file1Size').textContent = `File size: ${fs} Kbytes`;
+                const file1Reader = new FileReader(); // Read and parse CSV data from file1
+                file1Reader.onload = async function (e) {
+                    const file1Data = e.target.result; // The content of file1
+                    const parsedFile1Data = parseCSV(file1Data, 1); 
+                    console.log(Date.now(), ' File1Reader: parsed object=', $(parsedFile1Data));
+                    //clear existing array and calc new data
+                    clearGlobalVars();
+                    let results = await preProcess(parsedFile1Data);
+                    console.log(Date.now(), ` file1Reader: postProcess results=`, results);
+
+                    //calculateFileStatistics(parsedFile1Data, 1, 1); 
+                    await calculateFileStatistics(parsedFile1Data, 1, 1);  // running a second time to get updated modeCheckPointIndex columns  
+                    //updateStatsText(counterCount, elapsedTimeInSeconds, notcounted);
+                    console.log(Date.now(), ` File1Reader: calculatedStats completed` );
+                };
+                file1Reader.readAsText(file1);
+            } else {
+                document.getElementById('file1Size').textContent = '';
+            }
+        }); 
+
+        // Call the function to load the default CSV from the CDN when the page loads
+        window.addEventListener("load", loadCSVFromCDN());
+        
+
+        // Wait for the main window to load
+        //window.addEventListener('load', function () {
+        window.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                var item = document.getElementById("chartContainer");
+                //console.log(`chartContainer loaded:`,item);
+
+            }, 500);     
+        });
+
+    </script>
+
+</body>
+</html>
